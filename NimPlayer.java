@@ -23,14 +23,17 @@ public class NimPlayer {
        Map<GameTreeNode, Integer> graveyard = new HashMap<>();
        GameTreeNode root = new GameTreeNode(remaining, 0, true);
        root.score = 1;
+       // if make it -1 
        int closestAction = 1;
        if (graveyard.isEmpty()) {
    			pruningFactor = alphaBetaMinimax(root, Integer.MIN_VALUE, Integer.MAX_VALUE, true, graveyard);
    			System.out.println(pruningFactor);
-       }
+       } 
+       System.out.println("I HAVE KIDS");
+       System.out.println(root.children.toString());
        if(root.children.size() != 0) {
     		closestAction = root.children.get(0).action;
-    		   //WAT TO DO IF GAME TREE NODE IS NULL 
+    		System.out.println("i ran");
        }
        for (GameTreeNode child: root.children) {
     	   System.out.println(child.action);
@@ -46,16 +49,14 @@ public class NimPlayer {
 
     private int alphaBetaMinimax (GameTreeNode node, int alpha, int beta, boolean isMax, Map<GameTreeNode, Integer> visited) {
        GameTreeNode current = node;
-       // current node's score pruning score so it's the current minimax score
-       // if already in it then just attach the utility score from that visited 
     	int remaining = node.remaining;
-    	int currentScore = current.score;
+    	int utilityScore = current.score;
     	if (current.score == 0) {
     		return current.score;
     	}
     	if (current.isMax == isMax) {
+    		// I THINK IT ISNT UPDATING BECAUSE KEEP REDOING THIS LINE 
     		current.score = Integer.MIN_VALUE;
-    		// for each action to current 
         	for (int action = 1; action < remaining; action++) {
         		if(visited.containsKey(current)) {
         			break;
@@ -63,10 +64,12 @@ public class NimPlayer {
         		isMax = !isMax;
     			int remainingStonesAfterTakingAction = current.remaining - action;
     			if (remainingStonesAfterTakingAction == 0 && isMax) {
-    				currentScore = 0;
+    				utilityScore = 0;
+    			} else {
+    				utilityScore = 1;
     			}
         		GameTreeNode child = new GameTreeNode(remainingStonesAfterTakingAction,0,isMax);
-        		child.score = currentScore;
+        		child.score = utilityScore;
         		current.score = max(current.score, alphaBetaMinimax(child, alpha, beta, false, visited));
         		alpha = max(alpha, current.score);
         		if (beta <= alpha) {
@@ -80,15 +83,16 @@ public class NimPlayer {
     		for (int action = 1; action < remaining; action++) {
     			if(visited.containsKey(current)) {
         			break;
-        			// am i already figuring out the score? 
         		}
         		isMax = !isMax;
     			int remainingStonesAfterTakingAction = current.remaining - action;
     			if (remainingStonesAfterTakingAction == 0 && isMax) {
-    				currentScore = 0;
+    				utilityScore = 0;
+    			}  else {
+    				utilityScore = 1;
     			}
         		GameTreeNode child = new GameTreeNode(remainingStonesAfterTakingAction,action,isMax);
-        		child.score = currentScore;
+        		child.score = utilityScore;
         		current.score = min(current.score, alphaBetaMinimax(child, alpha, beta, false, visited));
         		beta = min(beta, current.score);
         		if (beta <= alpha) {
