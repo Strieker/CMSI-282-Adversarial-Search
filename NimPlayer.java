@@ -1,63 +1,6 @@
 package nim;
 
-import java.util.ArrayList;
-import java.util.Map;
-
-// NimPlayer.java, which is the workhorse of your assignment.
-// In here, your only task is to implement the choose(state) method
-// that returns the integer indicating the action the agent should take
-// from the given state. I have generously also included the GameTreeNode
-// class to aid in this pursuit, as well as a signature for the α-β pruning / minimax search component.
-
-//
-// [Repeated from Course Notes] Below, you'll find the algorithm for α-β Pruning.
-// This pseudocode is 80% of what you need to implement for this assignment,
-// the remaining 20% being how to construct and then use the Game Tree in pursuit
-// of optimal decision-making in the Game of Nim, and how to add memoization to this stub.
-//
-//  function alphabeta(node, α, β, maximizingPlayer)
-//    if node is a terminal node
-//      return the utility score of node
-//    if maximizingPlayer
-//      v := -∞
-//      for each child of node
-//        v := max(v, alphabeta(child, α, β, FALSE))
-//        α := max(α, v)
-//        if β ≤ α
-//          break;
-//      return v
-//    else
-//      v := ∞
-//      for each child of node
-//        v := min(v, alphabeta(child, α, β, TRUE))
-//        β := min(β, v)
-//        if β ≤ α
-//          break;
-//      return v
-
-// Additionally, since our agent is the maximizing player, we would start the ball rolling with the call:
-//
-//   alphabeta(root, -∞, ∞, TRUE)
-// Note, although Java has no -∞ nor ∞, you can safely use Integer.MIN_VALUE and Integer.MAX_VALUE for this purpose, respectively.
-
-// HINT
-// You've graduated from CMSI 281! Feel free to use any data structures 
-// from the Java Collections Framework in pursuit of your task.
-// Consider the appropriate data structures from the JCF that can
-// be used to accomplish Memoization of Game Tree subtrees [Hint:
-// you'll probably want some way to relate GameTreeNodes to the minimax scores
-// you found for them in the past!]. I've extended this hint in the skeleton.
-// Function getting out-of-hand complicated? Remember to use ample helper methods!
-//  Be particularly conscious of repeated code if you want full style-points.
-// Additionally, here's a good order of tasks to tackle:
-// Review your course notes and make sure you have a solid
-// grasp on how Minimax Search is meant to operate, at least at a
-// high-level. During this review, envision what fields and data
-// structures may be relevant in your solution, paying special attention to what is recorded in each GameTreeNode.
-// Your Classwork 2 will be a useful companion to help you understand and implement this assignment.
-// Using the algorithm for α-β pruning given above, step through a small example by hand.
-// Once you've done the above, you should be ready to bring your Nimesis to life!
-// Start early and ask questions! I'm here to help!
+import java.util.*;
 
 /**
  * Artificial Intelligence responsible for playing the game of Nim!
@@ -71,54 +14,113 @@ public class NimPlayer {
         this.MAX_REMOVAL = MAX_REMOVAL;
     }
 
-    /**
-     *
-     * @param   remaining   Integer representing the amount of stones left in the pile
-     * @return  An int action representing the number of stones to remove in the range
-     *          of [1, MAX_REMOVAL]
-     */
     public int choose (int remaining) {
-        throw new UnsupportedOperationException();
+       int pruningFactor = 0; 
+       //HOW DO YOU USE THIS / WHAT ARE WE DOING WITH THE V
+       //you are supposed to still do the key call 
+       //refernce to the root at the end 
+       // look at eac kid with the root node and choose the ref to root node look at the kids with the max score 
+       Map<GameTreeNode, Integer> graveyard = new HashMap<>();
+       GameTreeNode root = new GameTreeNode(remaining, 0, true);
+       root.score = 1;
+       int closestAction = 1;
+       if (graveyard.isEmpty()) {
+   			pruningFactor = alphaBetaMinimax(root, Integer.MIN_VALUE, Integer.MAX_VALUE, true, graveyard);
+   			System.out.println(pruningFactor);
+       }
+       if(root.children.size() != 0) {
+    		closestAction = root.children.get(0).action;
+    		   //WAT TO DO IF GAME TREE NODE IS NULL 
+       }
+       for (GameTreeNode child: root.children) {
+    	   System.out.println(child.action);
+    		if(child.score == 1) {
+    			closestAction = child.action;
+    		}
+       }
+       
+       return closestAction;
+      // STILL DONT GET WHY CALL IT TWICE 
     }
+    
 
-    /**
-     * Constructs the minimax game tree by the tenets of alpha-beta pruning with
-     * memoization for repeated states.
-     * @param   node    The root of the current game sub-tree
-     * @param   alpha   Smallest minimax score possible
-     * @param   beta    Largest minimax score possible
-     * @param   isMax   Boolean representing whether the given node is a max (true) or min (false) node
-     * @param   visited Map of GameTreeNodes to their minimax scores to avoid repeating large subtrees
-     * @return  Minimax score of the given node + [Side effect] constructs the game tree originating
-     *          from the given node
-     */
     private int alphaBetaMinimax (GameTreeNode node, int alpha, int beta, boolean isMax, Map<GameTreeNode, Integer> visited) {
-        throw new UnsupportedOperationException();
+       GameTreeNode current = node;
+       // current node's score pruning score so it's the current minimax score
+       // if already in it then just attach the utility score from that visited 
+    	int remaining = node.remaining;
+    	int currentScore = current.score;
+    	if (current.score == 0) {
+    		return current.score;
+    	}
+    	if (current.isMax == isMax) {
+    		current.score = Integer.MIN_VALUE;
+    		// for each action to current 
+        	for (int action = 1; action < remaining; action++) {
+        		if(visited.containsKey(current)) {
+        			break;
+        		}
+        		isMax = !isMax;
+    			int remainingStonesAfterTakingAction = current.remaining - action;
+    			if (remainingStonesAfterTakingAction == 0 && isMax) {
+    				currentScore = 0;
+    			}
+        		GameTreeNode child = new GameTreeNode(remainingStonesAfterTakingAction,0,isMax);
+        		child.score = currentScore;
+        		current.score = max(current.score, alphaBetaMinimax(child, alpha, beta, false, visited));
+        		alpha = max(alpha, current.score);
+        		if (beta <= alpha) {
+        			break;
+        		}
+        		current.children.add(child);
+        	}
+    		visited.put(current, current.score);
+    	} else {
+    		current.score = Integer.MAX_VALUE;
+    		for (int action = 1; action < remaining; action++) {
+    			if(visited.containsKey(current)) {
+        			break;
+        			// am i already figuring out the score? 
+        		}
+        		isMax = !isMax;
+    			int remainingStonesAfterTakingAction = current.remaining - action;
+    			if (remainingStonesAfterTakingAction == 0 && isMax) {
+    				currentScore = 0;
+    			}
+        		GameTreeNode child = new GameTreeNode(remainingStonesAfterTakingAction,action,isMax);
+        		child.score = currentScore;
+        		current.score = min(current.score, alphaBetaMinimax(child, alpha, beta, false, visited));
+        		beta = min(beta, current.score);
+        		if (beta <= alpha) {
+        			break;
+        		}
+        		current.children.add(child);
+        	}
+    		visited.put(current, current.score);
+    	}
+    	System.out.println("--------");
+    	System.out.println(current.children.toString());
+    	return current.score;
+    	
     }
-
+    
+	
+    
+    private int max(int n1, int n2){
+		return n1 > n2 ? n1 : n2;
+	};
+	
+	private int min(int n1, int n2){
+		return n1 > n2 ? n2 : n1;
+	};
 }
 
-/**
- * GameTreeNode to manage the Nim game tree.
- */
 class GameTreeNode {
 
     int remaining, action, score;
     boolean isMax;
     ArrayList<GameTreeNode> children;
 
-    /**
-     * Constructs a new GameTreeNode with the given number of stones
-     * remaining in the pile, and the action that led to it. We also
-     * initialize an empty ArrayList of children that can be added-to
-     * during search, and a placeholder score of -1 to be updated during
-     * search.
-     *
-     * @param   remaining   The Nim game state represented by this node: the #
-     *          of stones remaining in the pile
-     * @param   action  The action (# of stones removed) that led to this node
-     * @param   isMax   Boolean as to whether or not this is a maxnode
-     */
     GameTreeNode (int remaining, int action, boolean isMax) {
         this.remaining = remaining;
         this.action = action;
@@ -126,13 +128,15 @@ class GameTreeNode {
         children = new ArrayList<>();
         score = -1;
     }
-
+    
+    // WHAT DOES THIS DO / WHEN TO USE THIS PLEASE CAN YOU JUST USE CONTAINS 
     @Override
     public boolean equals (Object other) {
         return other instanceof GameTreeNode
             ? remaining == ((GameTreeNode) other).remaining &&
               isMax == ((GameTreeNode) other).isMax &&
               action == ((GameTreeNode) other).action
+              // possibly kill action 
             : false;
     }
 
