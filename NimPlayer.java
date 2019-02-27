@@ -15,109 +15,85 @@ public class NimPlayer {
     }
 
     public int choose (int remaining) {
-       int pruningFactor = 0; 
-       //HOW DO YOU USE THIS / WHAT ARE WE DOING WITH THE V
-       //you are supposed to still do the key call 
-       //refernce to the root at the end 
-       // look at eac kid with the root node and choose the ref to root node look at the kids with the max score 
        Map<GameTreeNode, Integer> graveyard = new HashMap<>();
        GameTreeNode root = new GameTreeNode(remaining, 0, true);
-       root.score = 1;
-       // if make it -1 
-       int closestAction = 1;
-       if (graveyard.isEmpty()) {
-   			pruningFactor = alphaBetaMinimax(root, Integer.MIN_VALUE, Integer.MAX_VALUE, true, graveyard);
-   			System.out.println(pruningFactor);
-       } 
-       System.out.println("I HAVE KIDS");
-       System.out.println(root.children.toString());
-       if(root.children.size() != 0) {
-    		closestAction = root.children.get(0).action;
-    		System.out.println("i ran");
-       }
+	   root.score = alphaBetaMinimax(root, Integer.MIN_VALUE, Integer.MAX_VALUE, true, graveyard);
+       int highestScore = Integer.MIN_VALUE; 
+       int bestAction = -1; 
        for (GameTreeNode child: root.children) {
     	   System.out.println(child.action);
-    		if(child.score == 1) {
-    			closestAction = child.action;
+    		if(child.score > highestScore && child.score <= MAX_REMOVAL) {
+    			bestAction = child.action;
+    			highestScore = child.score;
     		}
        }
-       
-       return closestAction;
-      // STILL DONT GET WHY CALL IT TWICE 
+       return bestAction;
     }
     
 
-    private int alphaBetaMinimax (GameTreeNode node, int alpha, int beta, boolean isMax, Map<GameTreeNode, Integer> visited) {
-       GameTreeNode current = node;
-    	int remaining = node.remaining;
-    	int utilityScore = current.score;
-    	if (current.score == 0) {
-    		return current.score;
+    private int alphaBetaMinimax (GameTreeNode node, int alpha, int beta, boolean isMax, Map<GameTreeNode, Integer> visited) { 
+    	if (node.remaining == 0) {
+    		if (isMax) {
+    			node.score = 0;
+    			return node.score;
+    		} else {
+    			node.score = 1;
+    			return node.score; 
+    		}
     	}
-    	if (current.isMax == isMax) {
-    		// I THINK IT ISNT UPDATING BECAUSE KEEP REDOING THIS LINE 
-    		current.score = Integer.MIN_VALUE;
-        	for (int action = 1; action < remaining; action++) {
-        		if(visited.containsKey(current)) {
-        			break;
+    	if (node.isMax) {
+    		int v = Integer.MIN_VALUE;
+        	for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
+        		GameTreeNode child = new GameTreeNode(node.remaining - action,action,false);
+        		node.children.add(child);
+        		if(visited.containsKey(child)) {
+        			child.score = visited.get(child);
+        		} else {
+        			child.score = alphaBetaMinimax(child, alpha, beta, false, visited);
         		}
-        		isMax = !isMax;
-    			int remainingStonesAfterTakingAction = current.remaining - action;
-    			if (remainingStonesAfterTakingAction == 0 && isMax) {
-    				utilityScore = 0;
-    			} else {
-    				utilityScore = 1;
-    			}
-        		GameTreeNode child = new GameTreeNode(remainingStonesAfterTakingAction,0,isMax);
-        		child.score = utilityScore;
-        		current.score = max(current.score, alphaBetaMinimax(child, alpha, beta, false, visited));
-        		alpha = max(alpha, current.score);
+        		node.score = Math.max(node.score,child.score);
+        		v = Math.max(v, child.score);
+        		alpha = Math.max(alpha, v);
+        		visited.put(child, child.score);
         		if (beta <= alpha) {
         			break;
         		}
-        		current.children.add(child);
         	}
-    		visited.put(current, current.score);
+    		return v; 
     	} else {
-    		current.score = Integer.MAX_VALUE;
-    		for (int action = 1; action < remaining; action++) {
-    			if(visited.containsKey(current)) {
-        			break;
+    		int v = Integer.MAX_VALUE;
+        	for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
+        		
+        		GameTreeNode child = new GameTreeNode(node.remaining - action,action,false);
+        		node.children.add(child);
+        		if(visited.containsKey(child)) {
+        			child.score = visited.get(child);
+        		} else {
+        			child.score = alphaBetaMinimax(child, alpha, beta, false, visited);
         		}
-        		isMax = !isMax;
-    			int remainingStonesAfterTakingAction = current.remaining - action;
-    			if (remainingStonesAfterTakingAction == 0 && isMax) {
-    				utilityScore = 0;
-    			}  else {
-    				utilityScore = 1;
-    			}
-        		GameTreeNode child = new GameTreeNode(remainingStonesAfterTakingAction,action,isMax);
-        		child.score = utilityScore;
-        		current.score = min(current.score, alphaBetaMinimax(child, alpha, beta, false, visited));
-        		beta = min(beta, current.score);
+        		node.score = Math.min(node.score,child.score);
+        		v = Math.min(v, child.score);
+        		beta = Math.min(beta, v);
+        		visited.put(child, child.score);
         		if (beta <= alpha) {
         			break;
         		}
-        		current.children.add(child);
         	}
-    		visited.put(current, current.score);
+    		return v; 
     	}
-    	System.out.println("--------");
-    	System.out.println(current.children.toString());
-    	return current.score;
-    	
+    	}
     }
     
 	
     
-    private int max(int n1, int n2){
-		return n1 > n2 ? n1 : n2;
-	};
-	
-	private int min(int n1, int n2){
-		return n1 > n2 ? n2 : n1;
-	};
-}
+//    private int max(int n1, int n2){
+//		return n1 > n2 ? n1 : n2;
+//	};
+//	
+//	private int min(int n1, int n2){
+//		return n1 > n2 ? n2 : n1;
+//	};
+//}
 
 class GameTreeNode {
 
@@ -133,7 +109,6 @@ class GameTreeNode {
         score = -1;
     }
     
-    // WHAT DOES THIS DO / WHEN TO USE THIS PLEASE CAN YOU JUST USE CONTAINS 
     @Override
     public boolean equals (Object other) {
         return other instanceof GameTreeNode
@@ -148,5 +123,6 @@ class GameTreeNode {
     public int hashCode () {
         return remaining + ((isMax) ? 1 : 0);
     }
+
 
 }
