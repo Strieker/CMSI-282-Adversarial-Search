@@ -11,8 +11,8 @@ public class NimPlayerTests {
     // crashing the test suite + to test that your
     // alpha-beta pruning and memoization are working;
     // If they are, 3 seconds should be more than enough
-//    @Rule
-//    public Timeout globalTimeout = Timeout.seconds(3);
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(3);
     
     /**
      * Basic test to make sure the nimesis knows the
@@ -102,4 +102,6 @@ public class NimPlayerTests {
         assertEquals(1, nimesis.choose(1000));
     }
 
+    // 6 STONES 6 STONES 
+    // 5 AND MAX IS 4 NO OPTIMAL SOLUTION 
 }

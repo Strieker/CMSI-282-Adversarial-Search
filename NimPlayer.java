@@ -21,7 +21,6 @@ public class NimPlayer {
        int highestScore = Integer.MIN_VALUE; 
        int bestAction = -1; 
        for (GameTreeNode child: root.children) {
-    	   System.out.println(child.action);
     		if(child.score > highestScore && child.score <= MAX_REMOVAL) {
     			bestAction = child.action;
     			highestScore = child.score;
@@ -63,13 +62,12 @@ public class NimPlayer {
     	} else {
     		int v = Integer.MAX_VALUE;
         	for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
-        		
-        		GameTreeNode child = new GameTreeNode(node.remaining - action,action,false);
+        		GameTreeNode child = new GameTreeNode(node.remaining - action,action,true);
         		node.children.add(child);
         		if(visited.containsKey(child)) {
         			child.score = visited.get(child);
         		} else {
-        			child.score = alphaBetaMinimax(child, alpha, beta, false, visited);
+        			child.score = alphaBetaMinimax(child, alpha, beta, true, visited);
         		}
         		node.score = Math.min(node.score,child.score);
         		v = Math.min(v, child.score);
@@ -81,8 +79,8 @@ public class NimPlayer {
         	}
     		return v; 
     	}
-    	}
     }
+ }
     
 	
     
