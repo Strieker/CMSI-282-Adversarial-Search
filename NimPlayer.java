@@ -3,124 +3,146 @@ package nim;
 import java.util.*;
 
 /**
- * Artificial Intelligence responsible for playing the game of Nim!
- * Implements the alpha-beta-pruning mini-max search algorithm
+ * Artificial Intelligence responsible for playing the game of Nim! Implements
+ * the alpha-beta-pruning mini-max search algorithm
  */
 public class NimPlayer {
 
-    private final int MAX_REMOVAL;
+	private final int MAX_REMOVAL;
 
-    NimPlayer (int MAX_REMOVAL) {
-        this.MAX_REMOVAL = MAX_REMOVAL;
-    }
-
-    public int choose (int remaining) {
-       Map<GameTreeNode, Integer> graveyard = new HashMap<>();
-       GameTreeNode root = new GameTreeNode(remaining, 0, true);
-	   root.score = alphaBetaMinimax(root, Integer.MIN_VALUE, Integer.MAX_VALUE, true, graveyard);
-       int highestScore = Integer.MIN_VALUE; 
-       int bestAction = -1; 
-       for (GameTreeNode child: root.children) {
-    		if(child.score > highestScore && child.score <= MAX_REMOVAL) {
-    			bestAction = child.action;
-    			highestScore = child.score;
-    		}
-       }
-       return bestAction;
-    }
-    
-
-    private int alphaBetaMinimax (GameTreeNode node, int alpha, int beta, boolean isMax, Map<GameTreeNode, Integer> visited) { 
-    	if (node.remaining == 0) {
-    		if (isMax) {
-    			node.score = 0;
-    			return node.score;
-    		} else {
-    			node.score = 1;
-    			return node.score; 
-    		}
-    	}
-    	if (node.isMax) {
-    		int v = Integer.MIN_VALUE;
-        	for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
-        		GameTreeNode child = new GameTreeNode(node.remaining - action,action,false);
-        		node.children.add(child);
-        		if(visited.containsKey(child)) {
-        			child.score = visited.get(child);
-        		} else {
-        			child.score = alphaBetaMinimax(child, alpha, beta, false, visited);
-        		}
-        		node.score = Math.max(node.score,child.score);
-        		v = Math.max(v, child.score);
-        		alpha = Math.max(alpha, v);
-        		visited.put(child, child.score);
-        		if (beta <= alpha) {
-        			break;
-        		}
-        	}
-    		return v; 
-    	} else {
-    		int v = Integer.MAX_VALUE;
-        	for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
-        		GameTreeNode child = new GameTreeNode(node.remaining - action,action,true);
-        		node.children.add(child);
-        		if(visited.containsKey(child)) {
-        			child.score = visited.get(child);
-        		} else {
-        			child.score = alphaBetaMinimax(child, alpha, beta, true, visited);
-        		}
-        		node.score = Math.min(node.score,child.score);
-        		v = Math.min(v, child.score);
-        		beta = Math.min(beta, v);
-        		visited.put(child, child.score);
-        		if (beta <= alpha) {
-        			break;
-        		}
-        	}
-    		return v; 
-    	}
-    }
- }
-    
+	NimPlayer(int MAX_REMOVAL) {
+		this.MAX_REMOVAL = MAX_REMOVAL;
+	}
 	
-    
-//    private int max(int n1, int n2){
-//		return n1 > n2 ? n1 : n2;
-//	};
-//	
-//	private int min(int n1, int n2){
-//		return n1 > n2 ? n2 : n1;
-//	};
-//}
+	/**
+    *
+    * @param   remaining   Integer representing the amount of stones left in the pile
+    * @return  An int action representing the number of stones to remove in the range
+    *          of [1, MAX_REMOVAL]
+    */
+	public int choose(int remaining) {
+		Map<GameTreeNode, Integer> graveyard = new HashMap<>();
+		GameTreeNode root = new GameTreeNode(remaining, 0, true);
+		int highestScore = -1;
+		int bestAction = -1;
+		root.score = alphaBetaMinimax(root, Integer.MIN_VALUE, Integer.MAX_VALUE, true, graveyard);
+		for (GameTreeNode child : root.children) {
+			if (child.score > highestScore && child.score <= MAX_REMOVAL) {
+				bestAction = child.action;
+				highestScore = child.score;
+			}
+		}
+		return bestAction;
+	}
+	
+	/**
+     * Constructs the minimax game tree by the tenets of alpha-beta pruning with
+     * memoization for repeated states.
+     * @param   node    The root of the current game sub-tree
+     * @param   alpha   Smallest minimax score possible
+     * @param   beta    Largest minimax score possible
+     * @param   isMax   Boolean representing whether the given node is a max (true) or min (false) node
+     * @param   visited Map of GameTreeNodes to their minimax scores to avoid repeating large subtrees
+     * @return  Minimax score of the given node + [Side effect] constructs the game tree originating
+     *          from the given node
+     */
+	private int alphaBetaMinimax(GameTreeNode node, int alpha, int beta, boolean isMax,
+			Map<GameTreeNode, Integer> visited) {
+		if (node.remaining == 0) {
+			if (isMax) {
+				node.score = 0;
+			} else {
+				node.score = 1;
+			}
+			return node.score;
+		}
+		if (node.isMax) {
+			int currentScorePlaceHolder = Integer.MIN_VALUE;
+			for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
+				int remainingAfterAction = node.remaining - action;
+				GameTreeNode child = new GameTreeNode(remainingAfterAction, action, false);
+				node.children.add(child);
+				if (visited.containsKey(child)) {
+					child.score = visited.get(child);
+				} else {
+					child.score = alphaBetaMinimax(child, alpha, beta, false, visited);
+				}
+				node.score = Math.max(node.score, child.score);
+				currentScorePlaceHolder = Math.max(currentScorePlaceHolder, child.score);
+				alpha = Math.max(alpha, currentScorePlaceHolder);
+				visited.put(child, child.score);
+				if (beta <= alpha) {
+					break;
+				}
+			}
+			node.score = currentScorePlaceHolder;
+			return node.score;
+		} else {
+			int currentScorePlaceHolder = Integer.MAX_VALUE;
+			for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
+				int remainingAfterAction = node.remaining - action;
+				GameTreeNode child = new GameTreeNode(remainingAfterAction, action, true);
+				node.children.add(child);
+				if (visited.containsKey(child)) {
+					child.score = visited.get(child);
+				} else {
+					child.score = alphaBetaMinimax(child, alpha, beta, true, visited);
+				}
+				node.score = Math.min(node.score, child.score);
+				currentScorePlaceHolder = Math.min(currentScorePlaceHolder, child.score);
+				beta = Math.min(beta, currentScorePlaceHolder);
+				visited.put(child, child.score);
+				if (beta <= alpha) {
+					break;
+				}
+			}
+			node.score = currentScorePlaceHolder;
+			return node.score;
+		}
+	}
+}
 
+/**
+ * GameTreeNode to manage the Nim game tree.
+ */
 class GameTreeNode {
 
-    int remaining, action, score;
-    boolean isMax;
-    ArrayList<GameTreeNode> children;
+	int remaining, action, score;
+	boolean isMax;
+	ArrayList<GameTreeNode> children;
+	
+	/**
+     * Constructs a new GameTreeNode with the given number of stones
+     * remaining in the pile, and the action that led to it. We also
+     * initialize an empty ArrayList of children that can be added-to
+     * during search, and a placeholder score of -1 to be updated during
+     * search.
+     *
+     * @param   remaining   The Nim game state represented by this node: the #
+     *          of stones remaining in the pile
+     * @param   action  The action (# of stones removed) that led to this node
+     * @param   isMax   Boolean as to whether or not this is a maxnode
+     */
+	GameTreeNode(int remaining, int action, boolean isMax) {
+		this.remaining = remaining;
+		this.action = action;
+		this.isMax = isMax;
+		children = new ArrayList<>();
+		score = -1;
+	}
 
-    GameTreeNode (int remaining, int action, boolean isMax) {
-        this.remaining = remaining;
-        this.action = action;
-        this.isMax = isMax;
-        children = new ArrayList<>();
-        score = -1;
-    }
-    
-    @Override
-    public boolean equals (Object other) {
-        return other instanceof GameTreeNode
-            ? remaining == ((GameTreeNode) other).remaining &&
-              isMax == ((GameTreeNode) other).isMax &&
-              action == ((GameTreeNode) other).action
-              // possibly kill action 
-            : false;
-    }
+	@Override
+	public boolean equals(Object other) {
+		return other instanceof GameTreeNode
+				? remaining == ((GameTreeNode) other).remaining && isMax == ((GameTreeNode) other).isMax
+						&& action == ((GameTreeNode) other).action
+				// possibly kill action
+				: false;
+	}
 
-    @Override
-    public int hashCode () {
-        return remaining + ((isMax) ? 1 : 0);
-    }
-
+	@Override
+	public int hashCode() {
+		return remaining + ((isMax) ? 1 : 0);
+	}
 
 }

@@ -22,7 +22,6 @@ public class NimPlayerTests {
     @Test
     public void NimPlayerTest_t0() {
         NimPlayer nimesis = new NimPlayer(2);
-        System.out.println(nimesis.choose(1));
         assertEquals(1, nimesis.choose(1));
         assertEquals(2, nimesis.choose(2));
     }
@@ -101,7 +100,29 @@ public class NimPlayerTests {
         NimPlayer nimesis = new NimPlayer(3);
         assertEquals(1, nimesis.choose(1000));
     }
-
-    // 6 STONES 6 STONES 
-    // 5 AND MAX IS 4 NO OPTIMAL SOLUTION 
+    
+    /**
+     * OOF! YOU THOUGHT WE WERE DONE ON THAT FLAVOR?
+     */
+    @Test
+    public void NimPlayerTest_t8() {
+        NimPlayer nimesis = new NimPlayer(6);
+        assertEquals(6, nimesis.choose(6));
+    }
+    
+    /**
+     * DSHAFKLDJKAFJDKSL;FALDKJ THE FLAVOOOOOR!
+     */
+    @Test
+    public void NimPlayerTest_t9() {
+        NimPlayer nimesis = new NimPlayer(4);
+        assertEquals(1, nimesis.choose(5));
+    }
+    
+    @Test
+    public void NimPlayerTest_t10() {
+        NimPlayer nimesis = new NimPlayer(2);
+        assertEquals(2, nimesis.choose(5));
+    }
+    //ADD MORE TESTS 
 }
