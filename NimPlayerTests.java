@@ -121,12 +121,22 @@ public class NimPlayerTests {
     }
     
     /*
-     * DKSLFJKDJSL HELLLOOOOOO THAT FLAVOOOOOOOOOOOOR!
+     * FLAVOOOOOOOOOOOOR OVERLOAD!
      */
     @Test
     public void NimPlayerTest_t11() {
         NimPlayer nimesis = new NimPlayer(12);
         assertEquals(7, nimesis.choose(20));
     }
-    //ADD MORE TESTS 
+    
+    /*
+     * The last drop of flavor... 
+     */
+    @Test
+    public void NimPlayerTest_t12() {
+        NimPlayer nimesis = new NimPlayer(3);
+        assertEquals(1, nimesis.choose(5));
+        assertEquals(2, nimesis.choose(6));
+    }
 }
+

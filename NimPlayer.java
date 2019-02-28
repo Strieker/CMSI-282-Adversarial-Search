@@ -49,55 +49,45 @@ public class NimPlayer {
 	private int alphaBetaMinimax(GameTreeNode node, int alpha, int beta, boolean isMax,
 			Map<GameTreeNode, Integer> visited) {
 		if (node.remaining == 0) {
-			if (isMax) {
-				node.score = 0;
-			} else {
-				node.score = 1;
-			}
-			return node.score;
+			return node.isMax ? 0 : 1;
 		}
 		if (node.isMax) {
-			int currentScorePlaceHolder = Integer.MIN_VALUE;
+			int currentUtilityScore = Integer.MIN_VALUE;
 			for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
-				int remainingAfterAction = node.remaining - action;
-				GameTreeNode child = new GameTreeNode(remainingAfterAction, action, false);
+				int remainingStonesAfterAction = node.remaining - action;
+				GameTreeNode child = new GameTreeNode(remainingStonesAfterAction, action, false);
 				node.children.add(child);
-				if (visited.containsKey(child)) {
-					child.score = visited.get(child);
-				} else {
-					child.score = alphaBetaMinimax(child, alpha, beta, false, visited);
-				}
+				child.score = visited.containsKey(child) 
+				    ? visited.get(child) 
+				    : alphaBetaMinimax(child, alpha, beta, false, visited);
 				node.score = Math.max(node.score, child.score);
-				currentScorePlaceHolder = Math.max(currentScorePlaceHolder, child.score);
-				alpha = Math.max(alpha, currentScorePlaceHolder);
+				currentUtilityScore = Math.max(currentUtilityScore, child.score);
+				alpha = Math.max(alpha, currentUtilityScore);
 				visited.put(child, child.score);
 				if (beta <= alpha) {
 					break;
 				}
 			}
-			node.score = currentScorePlaceHolder;
+			node.score = currentUtilityScore;
 			return node.score;
 		} else {
-			int currentScorePlaceHolder = Integer.MAX_VALUE;
+			int currentUtilityScore = Integer.MAX_VALUE;
 			for (int action = 1; action <= Math.min(MAX_REMOVAL, node.remaining); action++) {
-				int remainingAfterAction = node.remaining - action;
-				GameTreeNode child = new GameTreeNode(remainingAfterAction, action, true);
+				int remainingStonesAfterAction = node.remaining - action;
+				GameTreeNode child = new GameTreeNode(remainingStonesAfterAction, action, true);
 				node.children.add(child);
-				if (visited.containsKey(child)) {
-					child.score = visited.get(child);
-					
-				} else {
-					child.score = alphaBetaMinimax(child, alpha, beta, true, visited);
-				}
+				child.score = visited.containsKey(child) 
+					    ? visited.get(child) 
+					    : alphaBetaMinimax(child, alpha, beta, true, visited);
 				node.score = Math.min(node.score, child.score);
-				currentScorePlaceHolder = Math.min(currentScorePlaceHolder, child.score);
-				beta = Math.min(beta, currentScorePlaceHolder);
+				currentUtilityScore = Math.min(currentUtilityScore, child.score);
+				beta = Math.min(beta, currentUtilityScore);
 				visited.put(child, child.score);
 				if (beta <= alpha) {
 					break;
 				}
 			}
-			node.score = currentScorePlaceHolder;
+			node.score = currentUtilityScore;
 			return node.score;
 		}
 	}
