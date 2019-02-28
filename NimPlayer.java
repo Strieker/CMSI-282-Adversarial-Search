@@ -85,6 +85,7 @@ public class NimPlayer {
 				node.children.add(child);
 				if (visited.containsKey(child)) {
 					child.score = visited.get(child);
+					
 				} else {
 					child.score = alphaBetaMinimax(child, alpha, beta, true, visited);
 				}

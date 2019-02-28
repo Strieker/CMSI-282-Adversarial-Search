@@ -98,6 +98,7 @@ public class NimPlayerTests {
     @Test
     public void NimPlayerTest_t7() {
         NimPlayer nimesis = new NimPlayer(3);
+        NimPlayer nimesis2 = new NimPlayer(27);
         assertEquals(1, nimesis.choose(1000));
     }
     
@@ -119,10 +120,13 @@ public class NimPlayerTests {
         assertEquals(1, nimesis.choose(5));
     }
     
+    /*
+     * DKSLFJKDJSL HELLLOOOOOO THAT FLAVOOOOOOOOOOOOR!
+     */
     @Test
-    public void NimPlayerTest_t10() {
-        NimPlayer nimesis = new NimPlayer(2);
-        assertEquals(2, nimesis.choose(5));
+    public void NimPlayerTest_t11() {
+        NimPlayer nimesis = new NimPlayer(12);
+        assertEquals(7, nimesis.choose(20));
     }
     //ADD MORE TESTS 
 }
